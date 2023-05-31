@@ -1,0 +1,34 @@
+import random
+import datetime
+import json
+import boto3
+import uuid
+
+client = boto3.client('kinesis')
+
+def getReferrer():
+    x = random.randint(1,5)
+    x = x*50 
+    y = x+30 
+    data = {}
+    data['user_id'] = random.randint(x,y)
+    data['device_id'] = random.choice(['mobile','computer', 'tablet', 'mobile','computer'])
+    data['client_event'] = random.choice(['navigation','checkout','product_detail',
+    'products','selection','cart','category'])
+    now = datetime.datetime.now()
+    str_now = now.isoformat()
+    data['client_timestamp'] = str_now
+    return data
+
+def lambda_handler(event, context):
+    i=0
+    for i in range(50):
+        data = json.dumps(getReferrer())
+        
+        response = client.put_record(
+            StreamName='poc2',
+            Data=bytes("{}\n".format(data).encode('utf-8')),
+            PartitionKey=str(uuid.uuid4()) 
+            )
+                    
+    return response
